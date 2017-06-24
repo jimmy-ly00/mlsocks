@@ -33,61 +33,58 @@ class Socks5Server(SocketServer.StreamRequestHandler):
         return delay
 
     def handle_tcp(self, sock, remote):
-        try:
-            fdset = [sock, remote]
-            sock_tasks = Pool(500)
-            remote_tasks = Pool(500)
-            prev = [0, 0]
-            sock_switch = remote_switch = 0
-            sock_counter = remote_counter = 0
-            sock_count = remote_count = 0
-            sock_size = array.array('i', [0])
-            remote_size = array.array('i', [0])
-            while True:
-                r, w, e = select.select(fdset, [], [])
-                # Problem is knowing beforehand when the socket is going to switch to joinall remainding tasks
-                # This will check size of available bytes of the socket to notify the last send()/recv()
-                if sock in r:
-                    if sock_switch == 0:
-                        fcntl.ioctl(sock, termios.FIONREAD, sock_size, True)
-                        sock_count = ceil(sock_size[0] / float(BUF_SIZE))
-                        print("sock", sock_size[0], sock_count)
-                if remote in r:
-                    if remote_switch == 0:
-                        fcntl.ioctl(remote, termios.FIONREAD, remote_size, True)
-                        remote_count = ceil(remote_size[0] / float(BUF_SIZE))
-                        print("remote", remote_size[0], remote_count)
+        fdset = [sock, remote]
+        sock_tasks = Pool(500)
+        remote_tasks = Pool(500)
+        prev = [0, 0]
+        sock_switch = remote_switch = 0
+        sock_counter = remote_counter = 0
+        sock_count = remote_count = 0
+        sock_size = array.array('i', [0])
+        remote_size = array.array('i', [0])
+        while True:
+            r, w, e = select.select(fdset, [], [])
+            # Problem is knowing beforehand when the socket is going to switch to joinall remainding tasks
+            # This will check size of available bytes of the socket to notify the last send()/recv()
+            if sock in r:
+                if sock_switch == 0:
+                    fcntl.ioctl(sock, termios.FIONREAD, sock_size, True)
+                    sock_count = ceil(sock_size[0] / float(BUF_SIZE))
+                    print("sock", sock_size[0], sock_count)
+            if remote in r:
+                if remote_switch == 0:
+                    fcntl.ioctl(remote, termios.FIONREAD, remote_size, True)
+                    remote_count = ceil(remote_size[0] / float(BUF_SIZE))
+                    print("remote", remote_size[0], remote_count)
 
-                # Spawn delayed task for socket
-                if sock in r:
-                    sock_switch = 1
-                    delay = self.calculate_delay(prev)
-                    sock_buf = sock.recv(BUF_SIZE)
-                    if sock_buf is None or sock_buf == "": break
-                    #print(sock_buf)
-                    sock_tasks.spawn(self.delay_message, sock_buf, delay, remote)
-                    sock_counter += 1
-                if remote in r:
-                    remote_switch = 1
-                    delay = self.calculate_delay(prev)
-                    remote_buf = remote.recv(BUF_SIZE)
-                    if remote_buf is None or remote_buf == "": break
-                    #print(remote_buf)
-                    remote_tasks.spawn(self.delay_message, remote_buf, delay, sock)
-                    remote_counter += 1
+            # Spawn delayed task for socket
+            if sock in r:
+                sock_switch = 1
+                delay = self.calculate_delay(prev)
+                sock_buf = sock.recv(BUF_SIZE)
+                if sock_buf is None or sock_buf == "": break
+                #print(sock_buf)
+                sock_tasks.spawn(self.delay_message, sock_buf, delay, remote)
+                sock_counter += 1
+            if remote in r:
+                remote_switch = 1
+                delay = self.calculate_delay(prev)
+                remote_buf = remote.recv(BUF_SIZE)
+                if remote_buf is None or remote_buf == "": break
+                #print(remote_buf)
+                remote_tasks.spawn(self.delay_message, remote_buf, delay, sock)
+                remote_counter += 1
 
-                # Wait for last task before switching socket
-                if sock_count == sock_counter:
-                    print("joiningsocks")
-                    joinall(sock_tasks, raise_error=True)
-                    sock_counter = 0
-                if remote_count == remote_counter:
-                    print("joiningremote")
-                    joinall(remote_tasks, raise_error=True)
-                    remote_counter = 0
-        finally:
-            sock.close()
-            remote.close()
+            # Wait for last task before switching socket
+            if sock_count == sock_counter:
+                print("joiningsocks")
+                joinall(sock_tasks, raise_error=True)
+                sock_counter = 0
+            if remote_count == remote_counter:
+                print("joiningremote")
+                joinall(remote_tasks, raise_error=True)
+                remote_counter = 0
+
 
     def handle(self):
         try:
