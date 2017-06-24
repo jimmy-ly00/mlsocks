@@ -5,7 +5,7 @@ Uses a Stop-And-Go 1-Mix (https://www.freehaven.net/anonbib/cache/stop-and-go.pd
 Uses gevent asynchronous I/O and non-blocking sleep to delay messages while handling incoming messages 
 
 ## Prerequisite
-UNIX & Python 2.7
+Linux & Python 2.7
 ```
 pip install gevent
 ```
