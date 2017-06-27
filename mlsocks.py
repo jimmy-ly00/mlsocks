@@ -1,9 +1,20 @@
 # from gevent import monkey; monkey.patch_all()
-import socket, sys, select, SocketServer, struct, time, random
+import socket
+import sys
+import select
+import SocketServer
+import struct
+
+import fcntl
+import termios
+import array
+
+import time
+import random
 from math import log, exp, ceil
 from gevent import sleep, spawn, joinall, wait, select
 from gevent.pool import Pool
-import fcntl, termios, array
+
 
 BUF_SIZE = 512
 
