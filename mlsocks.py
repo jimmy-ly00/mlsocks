@@ -29,8 +29,9 @@ class Socks5Server(SocketServer.StreamRequestHandler):
     def calculate_delay(self, prev):
         # Generate random number from truncated exponential distribution
         u = random.SystemRandom().random()
-        tau = 0.5  # maximum bound
-        delay = -log(1 - (1 - exp(-tau)) * u)
+        lam = 2  # mean
+        tau = 10  # maximum bound
+        delay = -log(1 - (1 - exp(-lam * tau)) * u) / lam
 
         timestamp = time.time() * 1000
         new = timestamp + delay * 1000
@@ -133,9 +134,6 @@ class Socks5Server(SocketServer.StreamRequestHandler):
                     self.handle_tcp(sock, remote)
         except socket.error, exc:
             print "Caught exception socket.error : %s" % exc
-        finally:
-            remote.close()
-            sock.close()
 
 
 def main():
