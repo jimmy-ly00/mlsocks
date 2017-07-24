@@ -29,7 +29,7 @@ class Socks5Server(SocketServer.StreamRequestHandler):
     def calculate_delay(self, prev):
         # Generate random number from truncated exponential distribution
         u = random.SystemRandom().random()
-        lam = 2  # mean
+        lam = 1  # mean
         tau = 15  # maximum bound
         delay = -log(1 - (1 - exp(-lam * tau)) * u) / lam
 
