@@ -23,14 +23,14 @@ class ThreadingTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer): p
 class Socks5Server(SocketServer.StreamRequestHandler):
     def delay_message(self, message, delay, current_target):
         sleep(delay)
-        print("New delay: {}".format(delay))
+        #print("New delay: {}".format(delay))
         current_target.send(message)
 
     def calculate_delay(self, prev):
         # Generate random number from truncated exponential distribution
         u = random.SystemRandom().random()
         lam = 2  # mean
-        tau = 10  # maximum bound
+        tau = 15  # maximum bound
         delay = -log(1 - (1 - exp(-lam * tau)) * u) / lam
 
         timestamp = time.time() * 1000
