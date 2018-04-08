@@ -4,13 +4,13 @@ Uses a Stop-And-Go 1-Mix (https://www.freehaven.net/anonbib/cache/stop-and-go.pd
 
 Uses gevent asynchronous I/O and non-blocking sleep to delay messages while handling incoming messages 
 
-## Prerequisite
+### Prerequisite
 Linux & Python 2.7
 ```
 pip install gevent
 ```
 
-## Usage
+### Usage
 Runs on localhost 127.0.0.1 and default port 1080:
 
 ```
@@ -22,5 +22,5 @@ To test if it's working:
 curl --socks5 localhost:1080 example.com
 ```
 
-## References
+### References
 http://xiaoxia.org/2011/03/29/written-by-python-socks5-server/
